@@ -1,0 +1,95 @@
+<section
+  class="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(251,191,36,0.24),_transparent_28%),linear-gradient(135deg,_#f8f5ef_0%,_#e6eef8_46%,_#f8fafc_100%)] text-slate-900"
+>
+  <div class="mx-auto grid min-h-screen max-w-7xl lg:grid-cols-[minmax(0,1.15fr)_28rem]">
+    <div class="flex flex-col justify-center gap-8 px-6 py-12 lg:px-10 xl:px-16">
+      <p class="text-xs font-bold uppercase tracking-[0.35em] text-amber-700">Workplace Scheduler</p>
+      <h1 class="max-w-[11ch] text-5xl leading-none font-black tracking-[-0.08em] sm:text-6xl lg:text-8xl">
+        Coordinate every shift from one place.
+      </h1>
+      <p class="max-w-2xl text-base leading-8 text-slate-600">
+        Sign in to manage teams, view schedules, and keep workplace operations moving without
+        spreadsheet churn.
+      </p>
+
+      <div class="flex flex-wrap gap-3">
+        <span class="rounded-full border border-slate-300/70 bg-white/70 px-4 py-3 text-sm font-semibold text-slate-700 backdrop-blur">
+          Live shift visibility
+        </span>
+        <span class="rounded-full border border-slate-300/70 bg-white/70 px-4 py-3 text-sm font-semibold text-slate-700 backdrop-blur">
+          Leave and availability tracking
+        </span>
+        <span class="rounded-full border border-slate-300/70 bg-white/70 px-4 py-3 text-sm font-semibold text-slate-700 backdrop-blur">
+          Team updates and approvals
+        </span>
+      </div>
+    </div>
+
+    <div class="grid place-items-center bg-slate-900/5 px-6 py-10 backdrop-blur-sm lg:px-8">
+      <div class="w-full rounded-[2rem] border border-slate-200/80 bg-white/90 p-8 shadow-[0_24px_80px_rgba(15,23,42,0.12)] backdrop-blur">
+        <p class="text-xs font-bold uppercase tracking-[0.3em] text-teal-700">Welcome back</p>
+        <h2 class="mt-2 text-3xl font-bold text-slate-950">Log in</h2>
+        <p class="mt-2 text-sm leading-6 text-slate-500">Use your workplace account to continue.</p>
+
+        <form class="mt-8 space-y-5" (submit)="save($event)">
+          <label class="block space-y-2">
+            <span class="text-sm font-semibold text-slate-700">Email</span>
+            <input
+              class="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-teal-700 focus:ring-4 focus:ring-teal-700/10"
+              type="email"
+              placeholder="name@company.com"
+              autocomplete="email"
+              [formField]="form.email"
+            />
+          </label>
+
+          @if (form.email().touched() && form.email().invalid()) {
+            <div class="space-y-1 text-sm text-rose-700">
+              @for (error of form.email().errors(); track error.kind) {
+                <p>{{ error.message }}</p>
+              }
+            </div>
+          }
+
+          <label class="block space-y-2">
+            <span class="text-sm font-semibold text-slate-700">Password</span>
+            <input
+              class="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-teal-700 focus:ring-4 focus:ring-teal-700/10"
+              type="password"
+              placeholder="Enter your password"
+              autocomplete="current-password"
+              [formField]="form.password"
+            />
+          </label>
+
+          @if (form.password().touched() && form.password().invalid()) {
+            <div class="space-y-1 text-sm text-rose-700">
+              @for (error of form.password().errors(); track error.kind) {
+                <p>{{ error.message }}</p>
+              }
+            </div>
+          }
+
+          <label class="flex items-center gap-3 text-sm font-medium text-slate-600">
+            <input class="h-4 w-4 accent-teal-700" type="checkbox" [formField]="form.rememberMe" />
+            <span>Keep me signed in on this device</span>
+          </label>
+
+          <button
+            type="submit"
+            class="w-full rounded-2xl bg-[linear-gradient(135deg,#0f766e,#1d4ed8)] px-4 py-3 text-sm font-bold text-white shadow-[0_18px_35px_rgba(29,78,216,0.24)] transition hover:-translate-y-0.5"
+          >
+            Log in
+          </button>
+        </form>
+
+        <p class="mt-6 text-sm text-slate-500">
+          New here?
+          <a class="font-bold text-teal-700 hover:text-teal-800" routerLink="/auth/signup">
+            Create an account
+          </a>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
