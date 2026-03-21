@@ -75,11 +75,16 @@
             <span>Keep me signed in on this device</span>
           </label>
 
+          @if (apiError()) {
+            <p class="rounded-2xl bg-rose-50 px-4 py-3 text-sm text-rose-700">{{ apiError() }}</p>
+          }
+
           <button
             type="submit"
-            class="w-full rounded-2xl bg-[linear-gradient(135deg,#0f766e,#1d4ed8)] px-4 py-3 text-sm font-bold text-white shadow-[0_18px_35px_rgba(29,78,216,0.24)] transition hover:-translate-y-0.5"
+            [disabled]="isSubmitting()"
+            class="w-full rounded-2xl bg-[linear-gradient(135deg,#0f766e,#1d4ed8)] px-4 py-3 text-sm font-bold text-white shadow-[0_18px_35px_rgba(29,78,216,0.24)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70"
           >
-            Log in
+            {{ isSubmitting() ? 'Signing in...' : 'Log in' }}
           </button>
         </form>
 
