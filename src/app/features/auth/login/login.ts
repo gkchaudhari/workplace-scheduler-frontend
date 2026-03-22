@@ -2,6 +2,8 @@ import { Component, inject, signal } from '@angular/core';
 import { email, form, required, submit, FormField } from '@angular/forms/signals';
 import { Router, RouterLink } from '@angular/router';
 import { AuthApiService } from '../auth-api.service';
+import { AuthTokenService } from '../../../core/services/auth-token.service';
+import { AuthResponse } from '../../../core/models/auth.model';
 
 @Component({
   selector: 'app-login',
@@ -11,6 +13,7 @@ import { AuthApiService } from '../auth-api.service';
 })
 export class Login {
   private readonly authApi = inject(AuthApiService);
+  private readonly authTokenService = inject(AuthTokenService);
   private readonly router = inject(Router);
   protected readonly apiError = signal('');
   protected readonly isSubmitting = signal(false);
@@ -35,7 +38,11 @@ export class Login {
       this.isSubmitting.set(true);
 
       try {
-        await this.authApi.login(this.form().value());
+        let res:AuthResponse = await this.authApi.login(this.form().value());
+        console.log({res});
+        //store token
+        this.authTokenService.setToken(res?.token);
+        
         void this.router.navigate(['/dashboard']);
       } catch (error) {
         this.apiError.set(this.authApi.getErrorMessage(error, 'Login failed. Check your API and credentials.'));

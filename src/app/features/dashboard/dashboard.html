@@ -1,1 +1,131 @@
-<p>dashboard works!</p>
+<div class="flex flex-col gap-8">
+  <header class="flex flex-col gap-5 rounded-[2rem] bg-slate-950 px-8 py-8 text-white shadow-[0_30px_80px_rgba(15,23,42,0.22)] lg:flex-row lg:items-end lg:justify-between">
+      <div class="space-y-3">
+        <p class="text-xs font-bold uppercase tracking-[0.35em] text-cyan-300">Dashboard</p>
+        <h1 class="text-4xl font-black tracking-[-0.06em] sm:text-5xl">My Meeting Bookings</h1>
+        <p class="max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">
+          Track your current room, upcoming reservations, and your next scheduled meeting from one
+          place.
+        </p>
+      </div>
+
+      <a
+        routerLink="/dashboard"
+        class="inline-flex items-center justify-center rounded-2xl bg-cyan-400 px-5 py-3 text-sm font-bold text-slate-950 transition hover:bg-cyan-300"
+      >
+        Book Meeting Room
+      </a>
+  </header>
+
+  @if (isLoading()) {
+    <div class="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
+      <div class="rounded-[2rem] bg-white p-8 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
+        <div class="h-5 w-40 animate-pulse rounded-full bg-slate-200"></div>
+        <div class="mt-6 h-28 animate-pulse rounded-[1.5rem] bg-slate-100"></div>
+      </div>
+      <div class="rounded-[2rem] bg-white p-8 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
+        <div class="h-5 w-32 animate-pulse rounded-full bg-slate-200"></div>
+        <div class="mt-6 h-56 animate-pulse rounded-[1.5rem] bg-slate-100"></div>
+      </div>
+    </div>
+  } @else {
+    @if (errorMessage()) {
+      <div class="rounded-[1.5rem] border border-rose-200 bg-rose-50 px-5 py-4 text-sm font-medium text-rose-700">
+        {{ errorMessage() }}
+      </div>
+    }
+
+    <div class="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
+      <section class="rounded-[2rem] bg-white p-8 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
+        <div class="flex items-center justify-between gap-4">
+          <div>
+            <p class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">Current</p>
+            <h2 class="mt-2 text-2xl font-bold tracking-[-0.04em] text-slate-950">
+              Active booking
+            </h2>
+          </div>
+          <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">
+            Live
+          </span>
+        </div>
+
+        @if (currentBooking(); as booking) {
+          <article class="mt-8 rounded-[1.75rem] bg-[linear-gradient(135deg,#0f172a,#1e3a8a)] p-6 text-white">
+            <p class="text-xs font-bold uppercase tracking-[0.2em] text-cyan-300">In progress now</p>
+            <h3 class="mt-3 text-3xl font-bold tracking-[-0.05em]">{{ booking.title }}</h3>
+            <div class="mt-6 grid gap-4 sm:grid-cols-2">
+              <div class="rounded-[1.25rem] bg-white/10 p-4">
+                <p class="text-xs uppercase tracking-[0.18em] text-slate-300">Room</p>
+                <p class="mt-2 text-lg font-semibold">{{ booking.roomName }}</p>
+                <p class="mt-1 text-sm text-slate-300">{{ booking.location }}</p>
+              </div>
+              <div class="rounded-[1.25rem] bg-white/10 p-4">
+                <p class="text-xs uppercase tracking-[0.18em] text-slate-300">Schedule</p>
+                <p class="mt-2 text-lg font-semibold">{{ booking.startTime }} - {{ booking.endTime }}</p>
+                <p class="mt-1 text-sm text-slate-300">{{ booking.date }}</p>
+              </div>
+            </div>
+            <div class="mt-4 rounded-[1.25rem] bg-white/10 p-4">
+              <p class="text-xs uppercase tracking-[0.18em] text-slate-300">Agenda</p>
+              <p class="mt-2 text-sm leading-7 text-slate-100">{{ booking.agenda }}</p>
+            </div>
+          </article>
+        } @else {
+          <div class="mt-8 rounded-[1.75rem] border border-dashed border-slate-200 bg-slate-50 px-6 py-10 text-center">
+            <p class="text-lg font-semibold text-slate-700">No active meeting right now</p>
+            <p class="mt-2 text-sm leading-7 text-slate-500">
+              You do not have a booking running at the current time.
+            </p>
+          </div>
+        }
+      </section>
+
+      <aside class="rounded-[2rem] bg-white p-8 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <p class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">Upcoming</p>
+            <h2 class="mt-2 text-2xl font-bold tracking-[-0.04em] text-slate-950">
+              Next bookings
+            </h2>
+          </div>
+          <div class="rounded-2xl bg-slate-100 px-4 py-3 text-center">
+            <p class="text-2xl font-black text-slate-950">{{ totalUpcoming() }}</p>
+            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Planned</p>
+          </div>
+        </div>
+
+        @if (upcomingBookings().length) {
+          <div class="mt-8 space-y-4">
+            @for (booking of upcomingBookings(); track booking.id) {
+              <article class="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-5 transition hover:border-cyan-200 hover:bg-cyan-50/40">
+                <div class="flex items-start justify-between gap-4">
+                  <div>
+                    <h3 class="text-lg font-bold text-slate-900">{{ booking.title }}</h3>
+                    <p class="mt-1 text-sm text-slate-600">{{ booking.roomName }} • {{ booking.location }}</p>
+                  </div>
+                  <span class="rounded-full bg-white px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
+                    {{ booking.status }}
+                  </span>
+                </div>
+
+                <div class="mt-4 grid gap-3 text-sm text-slate-600 sm:grid-cols-2">
+                  <p><span class="font-semibold text-slate-900">Date:</span> {{ booking.date }}</p>
+                  <p><span class="font-semibold text-slate-900">Time:</span> {{ booking.startTime }} - {{ booking.endTime }}</p>
+                  <p><span class="font-semibold text-slate-900">Attendees:</span> {{ booking.attendeesCount }}</p>
+                  <p><span class="font-semibold text-slate-900">Agenda:</span> {{ booking.agenda }}</p>
+                </div>
+              </article>
+            }
+          </div>
+        } @else {
+          <div class="mt-8 rounded-[1.75rem] border border-dashed border-slate-200 bg-slate-50 px-6 py-10 text-center">
+            <p class="text-lg font-semibold text-slate-700">No upcoming bookings</p>
+            <p class="mt-2 text-sm leading-7 text-slate-500">
+              Your next reservation will appear here once you book a room.
+            </p>
+          </div>
+        }
+      </aside>
+    </div>
+  }
+</div>
