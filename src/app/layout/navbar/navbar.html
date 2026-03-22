@@ -1,0 +1,89 @@
+<mat-toolbar
+  class="sticky top-4 z-20 flex min-h-[5.5rem] flex-wrap gap-4 rounded-[1.75rem] border border-white/70 bg-white/80 px-5 py-4 shadow-[0_18px_50px_rgba(15,23,42,0.1)] backdrop-blur-xl"
+>
+  <div class="flex items-center gap-4">
+    <div
+      class="grid h-12 w-12 place-items-center rounded-2xl bg-[linear-gradient(135deg,#0f172a,#0891b2)] text-lg font-black tracking-[-0.04em] text-white shadow-[0_12px_28px_rgba(8,145,178,0.28)]"
+    >
+      MR
+    </div>
+    <div>
+      <p class="m-0 text-[0.7rem] font-extrabold uppercase tracking-[0.32em] text-cyan-700">
+        Meeting Room
+      </p>
+      <h2 class="m-0 text-xl font-black tracking-[-0.05em] text-slate-950">Booking Console</h2>
+    </div>
+  </div>
+
+  <div
+    class="order-3 flex w-full flex-wrap items-center gap-1 rounded-2xl bg-slate-100/95 p-1.5 lg:order-none lg:ml-6 lg:w-auto"
+  >
+    <a
+      mat-button
+      routerLink="/dashboard"
+      routerLinkActive="!bg-slate-950 !text-white shadow-[0_10px_24px_rgba(15,23,42,0.18)]"
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="!rounded-xl !px-4 !py-2 !text-sm !font-semibold !text-slate-600 transition hover:!bg-white hover:!text-slate-950"
+    >
+      Overview
+    </a>
+    <a
+      mat-button
+      routerLink="/dashboard"
+      routerLinkActive="!bg-slate-950 !text-white shadow-[0_10px_24px_rgba(15,23,42,0.18)]"
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="!rounded-xl !px-4 !py-2 !text-sm !font-semibold !text-slate-600 transition hover:!bg-white hover:!text-slate-950"
+    >
+      My Bookings
+    </a>
+    <a
+      mat-button
+      routerLink="/rooms"
+      routerLinkActive="!bg-slate-950 !text-white shadow-[0_10px_24px_rgba(15,23,42,0.18)]"
+      class="!rounded-xl !px-4 !py-2 !text-sm !font-semibold !text-slate-600 transition hover:!bg-white hover:!text-slate-950"
+    >
+      Rooms
+    </a>
+    <a
+      mat-button
+      routerLink="/dashboard"
+      class="!rounded-xl !px-4 !py-2 !text-sm !font-semibold !text-slate-600 transition hover:!bg-white hover:!text-slate-950"
+    >
+      Reports
+    </a>
+  </div>
+
+  <div class="hidden flex-1 lg:block"></div>
+
+  <div class="flex w-full flex-wrap items-center gap-3 lg:w-auto">
+    <div
+      class="flex min-w-full items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500 shadow-[0_10px_30px_rgba(15,23,42,0.05)] md:min-w-64"
+    >
+      <mat-icon>search</mat-icon>
+      <span>Find room or booking</span>
+    </div>
+
+    <a
+      mat-stroked-button
+      routerLink="/auth/login"
+      class="!rounded-xl !border-slate-300 !px-4 !py-2 !text-sm !font-semibold !text-slate-700"
+    >
+      Login
+    </a>
+    <a
+      mat-flat-button
+      routerLink="/auth/signup"
+      class="!rounded-xl !bg-cyan-400 !px-4 !py-2 !text-sm !font-bold !text-slate-950 hover:!bg-cyan-300"
+    >
+      Sign Up
+    </a>
+
+    <!-- <div class="flex items-center gap-3 rounded-2xl bg-slate-950 px-4 py-3 text-white shadow-[0_16px_40px_rgba(15,23,42,0.18)]">
+      <div class="grid h-11 w-11 place-items-center rounded-2xl bg-cyan-400 text-sm font-black text-slate-950">GC</div>
+      <div>
+        <p class="m-0 text-sm font-semibold">Ganesh C.</p>
+        <span class="m-0 text-[0.7rem] uppercase tracking-[0.18em] text-slate-300">Team Lead</span>
+      </div>
+    </div> -->
+  </div>
+</mat-toolbar>

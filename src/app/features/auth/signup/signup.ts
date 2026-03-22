@@ -1,6 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { email, form, FormField, minLength, required, submit } from '@angular/forms/signals';
 import { Router, RouterLink } from '@angular/router';
+import { AuthApiService } from '../auth-api.service';
 
 @Component({
   selector: 'app-signup',
@@ -9,7 +10,10 @@ import { Router, RouterLink } from '@angular/router';
   styleUrl: './signup.css',
 })
 export class Signup {
+  private readonly authApi = inject(AuthApiService);
   private readonly router = inject(Router);
+  protected readonly apiError = signal('');
+  protected readonly isSubmitting = signal(false);
 
   protected readonly signupModel = signal({
     fullName: '',
@@ -40,12 +44,22 @@ export class Signup {
 
     await submit(this.form, async () => {
       if (this.form().value().password !== this.form().value().confirmPassword) {
+        this.apiError.set('');
         return;
       }
 
-      //make an api call to save the data
+      this.apiError.set('');
+      this.isSubmitting.set(true);
 
-      void this.router.navigate(['/dashboard']);
+      try {
+        const { confirmPassword, ...payload } = this.form().value();
+        await this.authApi.signup(payload);
+        void this.router.navigate(['/dashboard']);
+      } catch (error) {
+        this.apiError.set(this.authApi.getErrorMessage(error, 'Signup failed. Check your API and payload.'));
+      } finally {
+        this.isSubmitting.set(false);
+      }
     });
   }
 }

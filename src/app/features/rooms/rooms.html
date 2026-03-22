@@ -1,0 +1,200 @@
+<div class="flex flex-col gap-8">
+  <header
+    class="flex flex-col gap-5 rounded-[2rem] bg-slate-950 px-8 py-8 text-white shadow-[0_30px_80px_rgba(15,23,42,0.22)] lg:flex-row lg:items-end lg:justify-between"
+  >
+    <div class="space-y-3">
+      <p class="text-xs font-bold uppercase tracking-[0.35em] text-cyan-300">Admin Rooms</p>
+      <h1 class="text-4xl font-black tracking-[-0.06em] sm:text-5xl">Meeting Room Management</h1>
+      <p class="max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">
+        Create, update, activate, and retire meeting rooms from a single admin workspace.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 text-center">
+      <div class="rounded-2xl bg-white/10 px-5 py-4">
+        <p class="text-2xl font-black">{{ rooms().length }}</p>
+        <p class="text-xs uppercase tracking-[0.18em] text-slate-300">Total rooms</p>
+      </div>
+      <div class="rounded-2xl bg-white/10 px-5 py-4">
+        <p class="text-2xl font-black">{{ activeRoomsCount() }}</p>
+        <p class="text-xs uppercase tracking-[0.18em] text-slate-300">Active</p>
+      </div>
+    </div>
+  </header>
+
+  @if (errorMessage()) {
+    <div
+      class="rounded-[1.5rem] border border-rose-200 bg-rose-50 px-5 py-4 text-sm font-medium text-rose-700"
+    >
+      {{ errorMessage() }}
+    </div>
+  }
+
+  <div class="grid gap-6 xl:grid-cols-[minmax(0,0.85fr)_minmax(420px,1.15fr)]">
+    <section class="rounded-[2rem] bg-white p-8 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
+      <div class="flex items-center justify-between gap-4">
+        <div>
+          <p class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">Room Form</p>
+          <h2 class="mt-2 text-2xl font-bold tracking-[-0.04em] text-slate-950">
+            {{ formTitle() }}
+          </h2>
+        </div>
+        @if (editingRoomId()) {
+          <button
+            type="button"
+            (click)="resetForm()"
+            class="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+          >
+            Cancel edit
+          </button>
+        }
+      </div>
+
+      <form class="mt-8 space-y-5" (submit)="saveRoom($event)">
+        <label class="block space-y-2">
+          <span class="text-sm font-semibold text-slate-700">Room name</span>
+          <input
+            type="text"
+            [formField]="roomForm.name"
+            placeholder="Atlas Room"
+            class="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100"
+          />
+        </label>
+        @if (roomForm.name().touched() && roomForm.name().invalid()) {
+          <div class="space-y-1 text-sm text-rose-700">
+            @for (error of roomForm.name().errors(); track error.kind) {
+              <p>{{ error.message }}</p>
+            }
+          </div>
+        }
+
+        <label class="block space-y-2">
+          <span class="text-sm font-semibold text-slate-700">Location</span>
+          <input
+            type="text"
+            [formField]="roomForm.location"
+            placeholder="Floor 2, Collaboration Zone"
+            class="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100"
+          />
+        </label>
+        @if (roomForm.location().touched() && roomForm.location().invalid()) {
+          <div class="space-y-1 text-sm text-rose-700">
+            @for (error of roomForm.location().errors(); track error.kind) {
+              <p>{{ error.message }}</p>
+            }
+          </div>
+        }
+
+        <label class="block space-y-2">
+          <span class="text-sm font-semibold text-slate-700">Capacity</span>
+          <input
+            type="number"
+            [formField]="roomForm.capacity"
+            class="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100"
+          />
+        </label>
+        @if (roomForm.capacity().touched() && roomForm.capacity().invalid()) {
+          <div class="space-y-1 text-sm text-rose-700">
+            @for (error of roomForm.capacity().errors(); track error.kind) {
+              <p>{{ error.message }}</p>
+            }
+          </div>
+        }
+
+        <label
+          class="flex items-center gap-3 rounded-2xl bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700"
+        >
+          <input type="checkbox" [formField]="roomForm.isActive" class="h-4 w-4 accent-cyan-500" />
+          <span>Room is active and available for booking</span>
+        </label>
+
+        <button
+          type="submit"
+          [disabled]="isSubmitting()"
+          class="w-full rounded-2xl bg-[linear-gradient(135deg,#0f172a,#0891b2)] px-4 py-3 text-sm font-bold text-white shadow-[0_16px_36px_rgba(8,145,178,0.22)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70"
+        >
+          {{ isSubmitting() ? 'Saving...' : editingRoomId() ? 'Update Room' : 'Create Room' }}
+        </button>
+      </form>
+    </section>
+
+    <section class="rounded-[2rem] bg-white p-8 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
+      <div class="flex items-center justify-between gap-4">
+        <div>
+          <p class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">
+            Room Directory
+          </p>
+          <h2 class="mt-2 text-2xl font-bold tracking-[-0.04em] text-slate-950">All rooms</h2>
+        </div>
+      </div>
+
+      @if (isLoading()) {
+        <div class="flex min-h-[200px] items-center justify-center">
+          <mat-spinner diameter="50" color="primary"></mat-spinner>
+        </div>
+      } @else if (rooms().length) {
+        <div class="mt-8 space-y-4">
+          @for (room of rooms(); track room.id) {
+            <article
+              class="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-5 transition hover:border-cyan-200 hover:bg-cyan-50/40"
+            >
+              <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                <div class="space-y-2">
+                  <div class="flex flex-wrap items-center gap-3">
+                    <h3 class="text-xl font-bold text-slate-950">{{ room.name }}</h3>
+                    <span
+                      class="rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.16em]"
+                      [class.bg-emerald-100]="room.isActive"
+                      [class.text-emerald-700]="room.isActive"
+                      [class.bg-slate-200]="!room.isActive"
+                      [class.text-slate-600]="!room.isActive"
+                    >
+                      {{ room.isActive ? 'Active' : 'Inactive' }}
+                    </span>
+                  </div>
+                  <p class="text-sm text-slate-600">{{ room.location }}</p>
+                  <div class="grid gap-2 text-sm text-slate-600 sm:grid-cols-2">
+                    <p>
+                      <span class="font-semibold text-slate-900">Capacity:</span>
+                      {{ room.capacity }}
+                    </p>
+                    <p>
+                      <span class="font-semibold text-slate-900">Created:</span>
+                      {{ room.createdAt | date: 'mediumDate' }}
+                    </p>
+                  </div>
+                </div>
+
+                <div class="flex gap-3">
+                  <button
+                    type="button"
+                    (click)="startEdit(room)"
+                    class="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-white"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    (click)="deleteRoom(room.id)"
+                    class="rounded-xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-500"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </article>
+          }
+        </div>
+      } @else {
+        <div
+          class="mt-8 rounded-[1.75rem] border border-dashed border-slate-200 bg-slate-50 px-6 py-10 text-center"
+        >
+          <p class="text-lg font-semibold text-slate-700">No rooms created yet</p>
+          <p class="mt-2 text-sm leading-7 text-slate-500">
+            Create your first meeting room to start allowing bookings.
+          </p>
+        </div>
+      }
+    </section>
+  </div>
+</div>

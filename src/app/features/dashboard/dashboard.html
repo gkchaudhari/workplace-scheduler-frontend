@@ -1,1 +1,337 @@
-<p>dashboard works!</p>
+<div class="flex flex-col gap-8">
+  <header class="flex flex-col gap-5 rounded-[2rem] bg-slate-950 px-8 py-8 text-white shadow-[0_30px_80px_rgba(15,23,42,0.22)] lg:flex-row lg:items-end lg:justify-between">
+      <div class="space-y-3">
+        <p class="text-xs font-bold uppercase tracking-[0.35em] text-cyan-300">Dashboard</p>
+        <h1 class="text-4xl font-black tracking-[-0.06em] sm:text-5xl">My Meeting Bookings</h1>
+        <p class="max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">
+          Track your current room, upcoming reservations, and your next scheduled meeting from one
+          place.
+        </p>
+      </div>
+
+      <a
+        href="#book-room"
+        class="inline-flex items-center justify-center rounded-2xl bg-cyan-400 px-5 py-3 text-sm font-bold text-slate-950 transition hover:bg-cyan-300"
+      >
+        Book Meeting Room
+      </a>
+  </header>
+
+  @if (isLoading()) {
+    <div class="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
+      <div class="rounded-[2rem] bg-white p-8 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
+        <div class="h-5 w-40 animate-pulse rounded-full bg-slate-200"></div>
+        <div class="mt-6 h-28 animate-pulse rounded-[1.5rem] bg-slate-100"></div>
+      </div>
+      <div class="rounded-[2rem] bg-white p-8 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
+        <div class="h-5 w-32 animate-pulse rounded-full bg-slate-200"></div>
+        <div class="mt-6 h-56 animate-pulse rounded-[1.5rem] bg-slate-100"></div>
+      </div>
+    </div>
+  } @else {
+    @if (errorMessage()) {
+      <div class="rounded-[1.5rem] border border-rose-200 bg-rose-50 px-5 py-4 text-sm font-medium text-rose-700">
+        {{ errorMessage() }}
+      </div>
+    }
+
+    <div class="grid gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(360px,0.85fr)]">
+      <section class="rounded-[2rem] bg-white p-8 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
+        <div class="flex items-center justify-between gap-4">
+          <div>
+            <p class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">Current</p>
+            <h2 class="mt-2 text-2xl font-bold tracking-[-0.04em] text-slate-950">
+              Active booking
+            </h2>
+          </div>
+          <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">
+            Live
+          </span>
+        </div>
+
+        @if (currentBooking(); as booking) {
+          <article class="mt-8 rounded-[1.75rem] bg-[linear-gradient(135deg,#0f172a,#1e3a8a)] p-6 text-white">
+            <p class="text-xs font-bold uppercase tracking-[0.2em] text-cyan-300">In progress now</p>
+            <h3 class="mt-3 text-3xl font-bold tracking-[-0.05em]">{{ booking.title }}</h3>
+            <div class="mt-6 grid gap-4 sm:grid-cols-2">
+              <div class="rounded-[1.25rem] bg-white/10 p-4">
+                <p class="text-xs uppercase tracking-[0.18em] text-slate-300">Room</p>
+                <p class="mt-2 text-lg font-semibold">{{ booking.roomName }}</p>
+                <p class="mt-1 text-sm text-slate-300">{{ booking.location }}</p>
+              </div>
+              <div class="rounded-[1.25rem] bg-white/10 p-4">
+                <p class="text-xs uppercase tracking-[0.18em] text-slate-300">Schedule</p>
+                <p class="mt-2 text-lg font-semibold">{{ booking.startTime }} - {{ booking.endTime }}</p>
+                <p class="mt-1 text-sm text-slate-300">{{ booking.date }}</p>
+              </div>
+            </div>
+            <div class="mt-4 rounded-[1.25rem] bg-white/10 p-4">
+              <p class="text-xs uppercase tracking-[0.18em] text-slate-300">Agenda</p>
+              <p class="mt-2 text-sm leading-7 text-slate-100">{{ booking.agenda }}</p>
+            </div>
+          </article>
+        } @else {
+          <div class="mt-8 rounded-[1.75rem] border border-dashed border-slate-200 bg-slate-50 px-6 py-10 text-center">
+            <p class="text-lg font-semibold text-slate-700">No active meeting right now</p>
+            <p class="mt-2 text-sm leading-7 text-slate-500">
+              You do not have a booking running at the current time.
+            </p>
+          </div>
+        }
+      </section>
+
+      <aside class="rounded-[2rem] bg-white p-8 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <p class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">Upcoming</p>
+            <h2 class="mt-2 text-2xl font-bold tracking-[-0.04em] text-slate-950">
+              Next bookings
+            </h2>
+          </div>
+          <div class="rounded-2xl bg-slate-100 px-4 py-3 text-center">
+            <p class="text-2xl font-black text-slate-950">{{ totalUpcoming() }}</p>
+            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Planned</p>
+          </div>
+        </div>
+
+        @if (upcomingBookings().length) {
+          <div class="mt-8 space-y-4">
+            @for (booking of upcomingBookings(); track booking.id) {
+              <article class="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-5 transition hover:border-cyan-200 hover:bg-cyan-50/40">
+                <div class="flex items-start justify-between gap-4">
+                  <div>
+                    <h3 class="text-lg font-bold text-slate-900">{{ booking.title }}</h3>
+                    <p class="mt-1 text-sm text-slate-600">{{ booking.roomName }} • {{ booking.location }}</p>
+                  </div>
+                  <span class="rounded-full bg-white px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
+                    {{ booking.status }}
+                  </span>
+                </div>
+
+                <div class="mt-4 grid gap-3 text-sm text-slate-600 sm:grid-cols-2">
+                  <p><span class="font-semibold text-slate-900">Date:</span> {{ booking.date }}</p>
+                  <p><span class="font-semibold text-slate-900">Time:</span> {{ booking.startTime }} - {{ booking.endTime }}</p>
+                  <p><span class="font-semibold text-slate-900">Attendees:</span> {{ booking.attendeesCount }}</p>
+                  <p><span class="font-semibold text-slate-900">Agenda:</span> {{ booking.agenda }}</p>
+                </div>
+              </article>
+            }
+          </div>
+        } @else {
+          <div class="mt-8 rounded-[1.75rem] border border-dashed border-slate-200 bg-slate-50 px-6 py-10 text-center">
+            <p class="text-lg font-semibold text-slate-700">No upcoming bookings</p>
+            <p class="mt-2 text-sm leading-7 text-slate-500">
+              Your next reservation will appear here once you book a room.
+            </p>
+          </div>
+        }
+      </aside>
+    </div>
+
+    <div class="grid gap-6 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
+      <section class="rounded-[2rem] bg-white p-8 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <p class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">Availability</p>
+            <h2 class="mt-2 text-2xl font-bold tracking-[-0.04em] text-slate-950">
+              Available rooms
+            </h2>
+          </div>
+          <div class="rounded-2xl bg-cyan-50 px-4 py-3 text-center">
+            <p class="text-2xl font-black text-slate-950">{{ activeRoomCount() }}</p>
+            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-700">Ready now</p>
+          </div>
+        </div>
+
+        @if (availableRooms().length) {
+          <div class="mt-8 grid gap-4 md:grid-cols-2">
+            @for (room of availableRooms(); track room.id) {
+              <article class="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-5 transition hover:border-cyan-200 hover:bg-cyan-50/40">
+                <div class="flex items-start justify-between gap-3">
+                  <div>
+                    <h3 class="text-lg font-bold text-slate-950">{{ room.name }}</h3>
+                    <p class="mt-1 text-sm text-slate-600">{{ room.location }}</p>
+                  </div>
+                  <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">
+                    Available
+                  </span>
+                </div>
+
+                <div class="mt-4 flex items-center justify-between rounded-2xl bg-white px-4 py-3 text-sm">
+                  <span class="font-semibold text-slate-900">Capacity</span>
+                  <span class="text-slate-600">{{ room.capacity }} people</span>
+                </div>
+              </article>
+            }
+          </div>
+        } @else {
+          <div class="mt-8 rounded-[1.75rem] border border-dashed border-slate-200 bg-slate-50 px-6 py-10 text-center">
+            <p class="text-lg font-semibold text-slate-700">No rooms currently available</p>
+            <p class="mt-2 text-sm leading-7 text-slate-500">
+              Once admins activate rooms, they will appear here for booking.
+            </p>
+          </div>
+        }
+      </section>
+
+      <section id="book-room" class="rounded-[2rem] bg-white p-8 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <p class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">Booking</p>
+            <h2 class="mt-2 text-2xl font-bold tracking-[-0.04em] text-slate-950">
+              Book a meeting room
+            </h2>
+          </div>
+          <div class="rounded-2xl bg-slate-100 px-4 py-3 text-center">
+            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Fast booking</p>
+          </div>
+        </div>
+
+        <form class="mt-8 space-y-5" (submit)="bookRoom($event)">
+          <label class="block space-y-2">
+            <span class="text-sm font-semibold text-slate-700">Meeting title</span>
+            <input
+              type="text"
+              [formField]="bookingForm.title"
+              placeholder="Weekly planning sync"
+              class="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100"
+            />
+          </label>
+          @if (bookingForm.title().touched() && bookingForm.title().invalid()) {
+            <div class="space-y-1 text-sm text-rose-700">
+              @for (error of bookingForm.title().errors(); track error.kind) {
+                <p>{{ error.message }}</p>
+              }
+            </div>
+          }
+
+          <label class="block space-y-2">
+            <span class="text-sm font-semibold text-slate-700">Select room</span>
+            <select
+              [formField]="bookingForm.roomId"
+              class="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100"
+            >
+              <option value="">Choose an available room</option>
+              @for (room of availableRooms(); track room.id) {
+                <option [value]="room.id">{{ room.name }} • {{ room.capacity }} seats</option>
+              }
+            </select>
+          </label>
+          @if (bookingForm.roomId().touched() && bookingForm.roomId().invalid()) {
+            <div class="space-y-1 text-sm text-rose-700">
+              @for (error of bookingForm.roomId().errors(); track error.kind) {
+                <p>{{ error.message }}</p>
+              }
+            </div>
+          }
+
+          <div class="grid gap-4 sm:grid-cols-3">
+            <label class="block space-y-2">
+              <span class="text-sm font-semibold text-slate-700">Date</span>
+              <input
+                type="date"
+                [formField]="bookingForm.date"
+                class="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100"
+              />
+            </label>
+            <label class="block space-y-2">
+              <span class="text-sm font-semibold text-slate-700">Start</span>
+              <input
+                type="time"
+                [formField]="bookingForm.startTime"
+                class="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100"
+              />
+            </label>
+            <label class="block space-y-2">
+              <span class="text-sm font-semibold text-slate-700">End</span>
+              <input
+                type="time"
+                [formField]="bookingForm.endTime"
+                class="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100"
+              />
+            </label>
+          </div>
+
+          <div class="grid gap-4 sm:grid-cols-2">
+            @if (bookingForm.date().touched() && bookingForm.date().invalid()) {
+              <div class="space-y-1 text-sm text-rose-700">
+                @for (error of bookingForm.date().errors(); track error.kind) {
+                  <p>{{ error.message }}</p>
+                }
+              </div>
+            } @else {
+              <div></div>
+            }
+
+            <div class="grid gap-4 sm:grid-cols-2">
+              <div>
+                @if (bookingForm.startTime().touched() && bookingForm.startTime().invalid()) {
+                  <div class="space-y-1 text-sm text-rose-700">
+                    @for (error of bookingForm.startTime().errors(); track error.kind) {
+                      <p>{{ error.message }}</p>
+                    }
+                  </div>
+                }
+              </div>
+              <div>
+                @if (bookingForm.endTime().touched() && bookingForm.endTime().invalid()) {
+                  <div class="space-y-1 text-sm text-rose-700">
+                    @for (error of bookingForm.endTime().errors(); track error.kind) {
+                      <p>{{ error.message }}</p>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+
+          <label class="block space-y-2">
+            <span class="text-sm font-semibold text-slate-700">Attendees</span>
+            <input
+              type="number"
+              [formField]="bookingForm.attendeesCount"
+              class="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100"
+            />
+          </label>
+          @if (bookingForm.attendeesCount().touched() && bookingForm.attendeesCount().invalid()) {
+            <div class="space-y-1 text-sm text-rose-700">
+              @for (error of bookingForm.attendeesCount().errors(); track error.kind) {
+                <p>{{ error.message }}</p>
+              }
+            </div>
+          }
+
+          <label class="block space-y-2">
+            <span class="text-sm font-semibold text-slate-700">Agenda</span>
+            <textarea
+              [formField]="bookingForm.agenda"
+              rows="4"
+              placeholder="Discuss roadmap, blockers, or room setup requirements"
+              class="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100"
+            ></textarea>
+          </label>
+
+          @if (bookingError()) {
+            <div class="rounded-2xl bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
+              {{ bookingError() }}
+            </div>
+          }
+
+          @if (bookingSuccess()) {
+            <div class="rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+              {{ bookingSuccess() }}
+            </div>
+          }
+
+          <button
+            type="submit"
+            [disabled]="isBookingSubmitting()"
+            class="w-full rounded-2xl bg-[linear-gradient(135deg,#0f172a,#0891b2)] px-4 py-3 text-sm font-bold text-white shadow-[0_16px_36px_rgba(8,145,178,0.22)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            {{ isBookingSubmitting() ? 'Booking room...' : 'Confirm booking' }}
+          </button>
+        </form>
+      </section>
+    </div>
+  }
+</div>
