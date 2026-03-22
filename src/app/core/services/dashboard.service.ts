@@ -56,6 +56,10 @@ export class DashboardService {
     });
   }
 
+  getBookings(): Promise<Booking[]> {
+    return Promise.resolve(this.bookingsState());
+  }
+
   createBooking(payload: BookingCreatePayload, room: Room): Promise<Booking> {
     const booking: Booking = {
       id: `bk-${Date.now()}`,

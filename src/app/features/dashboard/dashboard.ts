@@ -1,15 +1,15 @@
 import { Component, computed, inject, signal } from '@angular/core';
-import { FormField, form, min, required, submit } from '@angular/forms/signals';
+import { RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 
-import { Booking, BookingCreatePayload } from '../../core/models/booking.model';
+import { Booking } from '../../core/models/booking.model';
 import { Room } from '../../core/models/room.model';
 import { DashboardService } from '../../core/services/dashboard.service';
 import { RoomService } from '../../core/services/room.service';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [FormField],
+  imports: [RouterLink],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
 })
@@ -19,77 +19,16 @@ export class Dashboard {
 
   protected readonly currentBooking = signal<Booking | null>(null);
   protected readonly upcomingBookings = signal<Booking[]>([]);
-  protected readonly availableRooms = signal<Room[]>([]);
+  protected readonly roomStatuses = signal<RoomStatusViewModel[]>([]);
   protected readonly isLoading = signal(true);
   protected readonly errorMessage = signal('');
-  protected readonly bookingError = signal('');
-  protected readonly bookingSuccess = signal('');
-  protected readonly isBookingSubmitting = signal(false);
   protected readonly totalUpcoming = computed(() => this.upcomingBookings().length);
-  protected readonly activeRoomCount = computed(() => this.availableRooms().length);
-  protected readonly bookingModel = signal<BookingCreatePayload>({
-    title: '',
-    roomId: '',
-    date: '',
-    startTime: '',
-    endTime: '',
-    attendeesCount: 1,
-    agenda: '',
-  });
-  protected readonly bookingForm = form(this.bookingModel, (path) => {
-    required(path.title, { message: 'Meeting title is required.' });
-    required(path.roomId, { message: 'Select a room.' });
-    required(path.date, { message: 'Date is required.' });
-    required(path.startTime, { message: 'Start time is required.' });
-    required(path.endTime, { message: 'End time is required.' });
-    min(path.attendeesCount, 1, { message: 'At least 1 attendee is required.' });
-  });
+  protected readonly activeRoomCount = computed(
+    () => this.roomStatuses().filter((room) => room.status === 'available').length,
+  );
 
   constructor() {
     void this.loadDashboard();
-  }
-
-  protected async bookRoom(event: Event): Promise<void> {
-    event.preventDefault();
-
-    await submit(this.bookingForm, async () => {
-      this.bookingError.set('');
-      this.bookingSuccess.set('');
-      this.isBookingSubmitting.set(true);
-
-      try {
-        const payload = this.bookingForm().value();
-
-        if (payload.startTime >= payload.endTime) {
-          this.bookingError.set('End time must be later than start time.');
-          return;
-        }
-
-        const room = this.availableRooms().find((item) => item.id === Number(payload.roomId));
-        if (!room) {
-          this.bookingError.set('Selected room is not available.');
-          return;
-        }
-
-        await this.dashboardService.createBooking(payload, room);
-        await this.loadBookings();
-        this.bookingModel.set({
-          title: '',
-          roomId: '',
-          date: '',
-          startTime: '',
-          endTime: '',
-          attendeesCount: 1,
-          agenda: '',
-        });
-        this.bookingForm().reset();
-        this.bookingSuccess.set(`Booked ${room.name} successfully.`);
-      } catch {
-        this.bookingError.set('Unable to create the booking right now.');
-      } finally {
-        this.isBookingSubmitting.set(false);
-      }
-    });
   }
 
   private async loadDashboard(): Promise<void> {
@@ -97,7 +36,8 @@ export class Dashboard {
     this.errorMessage.set('');
 
     try {
-      await Promise.all([this.loadBookings(), this.loadRooms()]);
+      const [bookings, rooms] = await Promise.all([this.loadBookings(), this.loadRooms()]);
+      this.roomStatuses.set(this.buildRoomStatuses(rooms, bookings));
     } catch {
       this.errorMessage.set('Unable to load your bookings right now.');
     } finally {
@@ -105,14 +45,76 @@ export class Dashboard {
     }
   }
 
-  private async loadBookings(): Promise<void> {
+  private async loadBookings(): Promise<Booking[]> {
     const data = await this.dashboardService.getMyBookings();
     this.currentBooking.set(data.currentBooking);
     this.upcomingBookings.set(data.upcomingBookings);
+    return await this.dashboardService.getBookings();
   }
 
-  private async loadRooms(): Promise<void> {
-    const rooms = await firstValueFrom(this.roomService.getRooms());
-    this.availableRooms.set(rooms.filter((room) => room.isActive));
+  private async loadRooms(): Promise<Room[]> {
+    return await firstValueFrom(this.roomService.getRooms());
   }
+
+  private buildRoomStatuses(rooms: Room[], bookings: Booking[]): RoomStatusViewModel[] {
+    const now = new Date();
+
+    return rooms
+      .filter((room) => room.isActive)
+      .map((room) => {
+        const roomBookings = bookings
+          .filter((booking) => booking.roomId === room.id)
+          .sort(
+            (left, right) =>
+              this.toDate(left.date, left.startTime).getTime() -
+              this.toDate(right.date, right.startTime).getTime(),
+          );
+
+        const activeBooking = roomBookings.find((booking) => {
+          const start = this.toDate(booking.date, booking.startTime);
+          const end = this.toDate(booking.date, booking.endTime);
+          return start <= now && end >= now;
+        });
+
+        if (activeBooking) {
+          return {
+            room,
+            status: 'occupied' as const,
+            headline: `Occupied until ${activeBooking.endTime}`,
+            detail: activeBooking.title,
+          };
+        }
+
+        const nextBooking = roomBookings.find(
+          (booking) => this.toDate(booking.date, booking.startTime) > now,
+        );
+
+        if (nextBooking) {
+          return {
+            room,
+            status: 'available' as const,
+            headline: `Free now until ${nextBooking.startTime}`,
+            detail: `Next: ${nextBooking.title}`,
+          };
+        }
+
+        return {
+          room,
+          status: 'available' as const,
+          headline: 'Free for the rest of the day',
+          detail: 'No upcoming bookings scheduled',
+        };
+      });
+  }
+
+  private toDate(date: string, time: string): Date {
+    return new Date(`${date}T${time}:00`);
+  }
+}
+
+interface RoomStatusViewModel {
+  room: Room;
+  status: 'available' | 'occupied';
+  headline: string;
+  detail: string;
 }

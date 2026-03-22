@@ -1,0 +1,220 @@
+<div class="flex flex-col gap-8">
+  <header class="flex flex-col gap-5 rounded-[2rem] bg-slate-950 px-8 py-8 text-white shadow-[0_30px_80px_rgba(15,23,42,0.22)] lg:flex-row lg:items-end lg:justify-between">
+    <div class="space-y-3">
+      <p class="text-xs font-bold uppercase tracking-[0.35em] text-cyan-300">Booking</p>
+      <h1 class="text-4xl font-black tracking-[-0.06em] sm:text-5xl">Book a Meeting Room</h1>
+      <p class="max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">
+        Reserve an active room, schedule your time slot, and keep the rest of the team informed.
+      </p>
+    </div>
+
+    <button
+      type="button"
+      (click)="goToDashboard()"
+      class="inline-flex items-center justify-center rounded-2xl border border-white/20 bg-white/10 px-5 py-3 text-sm font-bold text-white transition hover:bg-white/20"
+    >
+      Back to Dashboard
+    </button>
+  </header>
+
+  @if (errorMessage()) {
+    <div class="rounded-[1.5rem] border border-rose-200 bg-rose-50 px-5 py-4 text-sm font-medium text-rose-700">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  @if (successMessage()) {
+    <div class="rounded-[1.5rem] border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-medium text-emerald-700">
+      {{ successMessage() }}
+    </div>
+  }
+
+  <div class="grid gap-6 xl:grid-cols-[minmax(360px,0.9fr)_minmax(0,1.1fr)]">
+    <section class="rounded-[2rem] bg-white p-8 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <p class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">Booking Form</p>
+          <h2 class="mt-2 text-2xl font-bold tracking-[-0.04em] text-slate-950">
+            Reserve your slot
+          </h2>
+        </div>
+        <div class="rounded-2xl bg-cyan-50 px-4 py-3 text-center">
+          <p class="text-2xl font-black text-slate-950">{{ roomCount() }}</p>
+          <p class="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-700">Active rooms</p>
+        </div>
+      </div>
+
+      <form class="mt-8 space-y-5" (submit)="save($event)">
+        <label class="block space-y-2">
+          <span class="text-sm font-semibold text-slate-700">Meeting title</span>
+          <input
+            type="text"
+            [formField]="bookingForm.title"
+            placeholder="Weekly planning sync"
+            class="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100"
+          />
+        </label>
+        @if (bookingForm.title().touched() && bookingForm.title().invalid()) {
+          <div class="space-y-1 text-sm text-rose-700">
+            @for (error of bookingForm.title().errors(); track error.kind) {
+              <p>{{ error.message }}</p>
+            }
+          </div>
+        }
+
+        <label class="block space-y-2">
+          <span class="text-sm font-semibold text-slate-700">Select room</span>
+          <select
+            [formField]="bookingForm.roomId"
+            class="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100"
+          >
+            <option value="">Choose an available room</option>
+            @for (room of availableRooms(); track room.id) {
+              <option [value]="room.id">{{ room.name }} • {{ room.capacity }} seats</option>
+            }
+          </select>
+        </label>
+        @if (bookingForm.roomId().touched() && bookingForm.roomId().invalid()) {
+          <div class="space-y-1 text-sm text-rose-700">
+            @for (error of bookingForm.roomId().errors(); track error.kind) {
+              <p>{{ error.message }}</p>
+            }
+          </div>
+        }
+
+        <div class="grid gap-4 sm:grid-cols-3">
+          <label class="block space-y-2">
+            <span class="text-sm font-semibold text-slate-700">Date</span>
+            <input
+              type="date"
+              [formField]="bookingForm.date"
+              class="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100"
+            />
+          </label>
+          <label class="block space-y-2">
+            <span class="text-sm font-semibold text-slate-700">Start</span>
+            <input
+              type="time"
+              [formField]="bookingForm.startTime"
+              class="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100"
+            />
+          </label>
+          <label class="block space-y-2">
+            <span class="text-sm font-semibold text-slate-700">End</span>
+            <input
+              type="time"
+              [formField]="bookingForm.endTime"
+              class="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100"
+            />
+          </label>
+        </div>
+
+        <div class="grid gap-4 sm:grid-cols-3">
+          <div>
+            @if (bookingForm.date().touched() && bookingForm.date().invalid()) {
+              <div class="space-y-1 text-sm text-rose-700">
+                @for (error of bookingForm.date().errors(); track error.kind) {
+                  <p>{{ error.message }}</p>
+                }
+              </div>
+            }
+          </div>
+          <div>
+            @if (bookingForm.startTime().touched() && bookingForm.startTime().invalid()) {
+              <div class="space-y-1 text-sm text-rose-700">
+                @for (error of bookingForm.startTime().errors(); track error.kind) {
+                  <p>{{ error.message }}</p>
+                }
+              </div>
+            }
+          </div>
+          <div>
+            @if (bookingForm.endTime().touched() && bookingForm.endTime().invalid()) {
+              <div class="space-y-1 text-sm text-rose-700">
+                @for (error of bookingForm.endTime().errors(); track error.kind) {
+                  <p>{{ error.message }}</p>
+                }
+              </div>
+            }
+          </div>
+        </div>
+
+        <label class="block space-y-2">
+          <span class="text-sm font-semibold text-slate-700">Attendees</span>
+          <input
+            type="number"
+            [formField]="bookingForm.attendeesCount"
+            class="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100"
+          />
+        </label>
+        @if (bookingForm.attendeesCount().touched() && bookingForm.attendeesCount().invalid()) {
+          <div class="space-y-1 text-sm text-rose-700">
+            @for (error of bookingForm.attendeesCount().errors(); track error.kind) {
+              <p>{{ error.message }}</p>
+            }
+          </div>
+        }
+
+        <label class="block space-y-2">
+          <span class="text-sm font-semibold text-slate-700">Agenda</span>
+          <textarea
+            [formField]="bookingForm.agenda"
+            rows="4"
+            placeholder="Discuss roadmap, blockers, or setup requirements"
+            class="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100"
+          ></textarea>
+        </label>
+
+        <button
+          type="submit"
+          [disabled]="isSubmitting()"
+          class="w-full rounded-2xl bg-[linear-gradient(135deg,#0f172a,#0891b2)] px-4 py-3 text-sm font-bold text-white shadow-[0_16px_36px_rgba(8,145,178,0.22)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70"
+        >
+          {{ isSubmitting() ? 'Booking room...' : 'Confirm booking' }}
+        </button>
+      </form>
+    </section>
+
+    <section class="rounded-[2rem] bg-white p-8 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
+      <div>
+        <p class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">Available Now</p>
+        <h2 class="mt-2 text-2xl font-bold tracking-[-0.04em] text-slate-950">
+          Rooms ready to reserve
+        </h2>
+      </div>
+
+      @if (isLoading()) {
+        <div class="mt-8 space-y-4">
+          <div class="h-28 animate-pulse rounded-[1.5rem] bg-slate-100"></div>
+          <div class="h-28 animate-pulse rounded-[1.5rem] bg-slate-100"></div>
+        </div>
+      } @else if (availableRooms().length) {
+        <div class="mt-8 space-y-4">
+          @for (room of availableRooms(); track room.id) {
+            <article class="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-5">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <h3 class="text-lg font-bold text-slate-950">{{ room.name }}</h3>
+                  <p class="mt-1 text-sm text-slate-600">{{ room.location }}</p>
+                </div>
+                <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">
+                  Active
+                </span>
+              </div>
+              <div class="mt-4 flex items-center justify-between rounded-2xl bg-white px-4 py-3 text-sm">
+                <span class="font-semibold text-slate-900">Capacity</span>
+                <span class="text-slate-600">{{ room.capacity }} people</span>
+              </div>
+            </article>
+          }
+        </div>
+      } @else {
+        <div class="mt-8 rounded-[1.75rem] border border-dashed border-slate-200 bg-slate-50 px-6 py-10 text-center">
+          <p class="text-lg font-semibold text-slate-700">No active rooms available</p>
+          <p class="mt-2 text-sm leading-7 text-slate-500">
+            Ask an admin to activate meeting rooms before booking.
+          </p>
+        </div>
+      }
+    </section>
+  </div>
