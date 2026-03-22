@@ -1,5 +1,6 @@
 export interface Booking {
   id: string;
+  roomId?: number;
   title: string;
   roomName: string;
   location: string;
@@ -14,4 +15,14 @@ export interface Booking {
 export interface DashboardBookings {
   currentBooking: Booking | null;
   upcomingBookings: Booking[];
+}
+
+export interface BookingCreatePayload {
+  title: string;
+  roomId: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  attendeesCount: number;
+  agenda: string;
 }
